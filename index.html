@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AssetPro | Upravljanje imovinom</title>
+<style>
+:root {
+  --navy: #14243a;
+  --blue: #2864dc;
+  --bg: #f4f7fb;
+  --border: #e3e8f0;
+  --text: #263449;
+  --muted: #718096;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 235px;
+  background: var(--navy);
+  color: white;
+  padding: 28px 16px;
+  flex-shrink: 0;
+}
+.brand { font-size: 25px; font-weight: 800; margin: 0 10px 8px; }
+.brand span { color: #72a2ff; }
+.tagline { color: #aebbd0; font-size: 12px; margin: 0 10px 34px; }
+.nav {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #c5d0df;
+  text-align: left;
+  padding: 13px 12px;
+  margin: 4px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.nav.active, .nav:hover { background: #263b59; color: white; }
+.main { padding: 32px; min-width: 0; flex: 1; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+h1 { font-size: 27px; margin: 0 0 8px; }
+.subtitle { color: var(--muted); font-size: 14px; }
+button, input, select { font: inherit; }
+.primary {
+  border: 0; background: var(--blue); color: white;
+  padding: 12px 17px; border-radius: 8px; cursor: pointer;
+}
+.primary:hover { background: #1c4fb6; }
+.cards { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin-bottom: 26px; }
+.card, .panel { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-label { color: var(--muted); font-size: 13px; }
+.card-value { font-size: 27px; font-weight: 750; margin: 14px 0 7px; }
+.card-note { color: var(--muted); font-size: 12px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+h2 { font-size: 17px; margin: 0; }
+.search { padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; width: 240px; max-width: 100%; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { color: var(--muted); background: #f8fafc; font-size: 12px; font-weight: 600; }
+th, td { padding: 14px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 13px; }
+.status { display: inline-block; border-radius: 20px; padding: 5px 9px; background: #e4f7ec; color: #187647; font-size: 11px; }
+.actions { display: flex; gap: 8px; }
+.small-btn { border: 1px solid var(--border); background: white; padding: 6px 9px; border-radius: 6px; cursor: pointer; }
+.empty { text-align: center; color: var(--muted); padding: 35px; }
+.notice { color: #805d13; background: #fff7df; padding: 12px 15px; border-radius: 8px; font-size: 12px; margin-top: 20px; }
+.modal { position: fixed; inset: 0; background: #101c2c99; display: none; align-items: center; justify-content: center; padding: 16px; z-index: 5; }
+.modal.open { display: flex; }
+.modal-box { background: white; border-radius: 14px; padding: 26px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 22px 0; }
+.field label { display: block; font-size: 12px; margin-bottom: 7px; color: var(--muted); }
+.field input, .field select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 7px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.secondary { background: white; border: 1px solid var(--border); padding: 11px 15px; border-radius: 8px; cursor: pointer; }
+@media(max-width:1000px) { .cards { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:650px) {
+  .layout { display: block; }
+  .sidebar { width: 100%; padding: 16px; }
+  .tagline { margin-bottom: 12px; }
+  .nav { display: inline-block; width: auto; margin: 2px; }
+  .main { padding: 20px 14px; }
+  .cards { gap: 10px; }
+  .card { padding: 14px; }
+  .card-value { font-size: 21px; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Asset<span>Pro</span></div>
+    <div class="tagline">UPRAVLJANJE IMOVINOM</div>
+    <button class="nav active" data-page="dashboard">▦ &nbsp; Kontrolna tabla</button>
+    <button class="nav" data-page="assets">▤ &nbsp; Registar imovine</button>
+    <button class="nav" data-page="maintenance">⚙ &nbsp; Održavanje</button>
+    <button class="nav" data-page="history">◷ &nbsp; Historija</button>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div>
+        <h1 id="pageTitle">Kontrolna tabla</h1>
+        <div class="subtitle">Dobro došao u AssetPro — evidencija imovine tvoje firme.</div>
+      </div>
+      <button class="primary" id="addBtn">+ Dodaj imovinu</button>
+    </div>
+
+    <div class="cards">
+      <div class="card"><div class="card-label">Ukupno sredstava</div><div class="card-value" id="totalCount">0</div><div class="card-note">Evidentirane stavke</div></div>
+      <div class="card"><div class="card-label">Ukupna nabavna vrijednost</div><div class="card-value" id="totalValue">0 KM</div><div class="card-note">Zbir nabavnih cijena</div></div>
+      <div class="card"><div class="card-label">U upotrebi</div><div class="card-value" id="activeCount">0</div><div class="card-note">Aktivna sredstva</div></div>
+      <div class="card"><div class="card-label">Na održavanju</div><div class="card-value" id="maintenanceCount">0</div><div class="card-note">Sredstva na servisu</div></div>
+    </div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 id="tableTitle">Registar imovine</h2>
+        <input class="search" id="search" placeholder="Pretraži imovinu..." aria-label="Pretraži imovinu">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Inventarski broj</th><th>Naziv</th><th>Kategorija</th>
+            <th>Lokacija</th><th>Nabavna cijena</th><th>Status</th><th>Akcije</th>
+          </tr></thead>
+          <tbody id="assetRows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="emptyState">Još nema imovine. Klikni „Dodaj imovinu” da uneseš prvu stavku.</div>
+    </section>
+
+    <div class="notice">Demo verzija: podaci se čuvaju samo u ovom pregledniku. Ovo još nije sistem za sigurno čuvanje poslovnih podataka niti za više firmi.</div>
+  </main>
+</div>
+
+<div class="modal" id="assetModal">
+  <div class="modal-box">
+    <h2 id="modalTitle">Dodaj novu imovinu</h2>
+    <form id="assetForm">
+      <div class="form-grid">
+        <div class="field"><label for="assetName">Naziv *</label><input id="assetName" required placeholder="Npr. Laptop Lenovo"></div>
+        <div class="field"><label for="assetTag">Inventarski broj *</label><input id="assetTag" required placeholder="Npr. AST-001"></div>
+        <div class="field"><label for="assetCategory">Kategorija</label><select id="assetCategory"><option>IT oprema</option><option>Mašine</option><option>Vozila</option><option>Alati</option><option>Namještaj</option><option>Ostalo</option></select></div>
+        <div class="field"><label for="assetLocation">Lokacija</label><input id="assetLocation" placeholder="Npr. Sarajevo - kancelarija"></div>
+        <div class="field"><label for="assetPrice">Nabavna cijena (KM)</label><input id="assetPrice" type="number" min="0" step="0.01" value="0"></div>
+        <div class="field"><label for="assetDate">Datum kupovine</label><input id="assetDate" type="date"></div>
+        <div class="field"><label for="assetSerial">Serijski broj</label><input id="assetSerial"></div>
+        <div class="field"><label for="assetEmployee">Zadužena osoba</label><input id="assetEmployee" placeholder="Ime zaposlenog"></div>
+        <div class="field"><label for="assetStatus">Status</label><select id="assetStatus"><option>U upotrebi</option><option>Na održavanju</option><option>Na skladištu</option><option>Otpisano</option></select></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="cancelBtn">Odustani</button>
+        <button type="submit" class="primary">Sačuvaj imovinu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "assetpro-demo-assets-v1";
+let assets = [];
+let editingId = null;
+let currentPage = "dashboard";
+
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  assets = saved ? JSON.parse(saved) : [];
+  if (!Array.isArray(assets)) assets = [];
+} catch { assets = []; }
+
+const $ = id => document.getElementById(id);
+const money = value => new Intl.NumberFormat("bs-BA", {
+  style: "currency", currency: "BAM", maximumFractionDigits: 2
+}).format(value);
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(assets));
+}
+
+function render() {
+  $("totalCount").textContent = assets.length;
+  $("totalValue").textContent = money(assets.reduce((sum, a) => sum + Number(a.price || 0), 0));
+  $("activeCount").textContent = assets.filter(a => a.status === "U upotrebi").length;
+  $("maintenanceCount").textContent = assets.filter(a => a.status === "Na održavanju").length;
+
+  const query = $("search").value.toLocaleLowerCase("bs");
+  const filtered = assets.filter(a =>
+    [a.name, a.tag, a.category, a.location, a.employee, a.serial]
+      .some(v => String(v || "").toLocaleLowerCase("bs").includes(query))
+  );
+
+  $("assetRows").innerHTML = "";
+  $("emptyState").style.display = filtered.length ? "none" : "block";
+  $("emptyState").textContent = assets.length
+    ? "Nema rezultata za unesenu pretragu."
+    : "Još nema imovine. Klikni „Dodaj imovinu” da uneseš prvu stavku.";
+
+  filtered.forEach(a => {
+    const tr = document.createElement("tr");
+    const values = [a.tag, a.name, a.category, a.location || "—", money(Number(a.price || 0)), a.status];
+    values.forEach((value, i) => {
+      const td = document.createElement("td");
+      if (i === 5) {
+        const badge = document.createElement("span");
+        badge.className = "status";
+        badge.textContent = value;
+        td.appendChild(badge);
+      } else {
+        td.textContent = value;
+      }
+      tr.appendChild(td);
+    });
+
+    const actions = document.createElement("td");
+    const group = document.createElement("div");
+    group.className = "actions";
+    const edit = document.createElement("button");
+    edit.className = "small-btn";
+    edit.textContent = "Uredi";
+    edit.addEventListener("click", () => openModal(a.id));
+    const del = document.createElement("button");
+    del.className = "small-btn";
+    del.textContent = "Obriši";
+    del.addEventListener("click", () => {
+      if (confirm("Želiš li zaista obrisati stavku " + a.name + "?")) {
+        assets = assets.filter(item => item.id !== a.id);
+        persist();
+        render();
+      }
+    });
+    group.append(edit, del);
+    actions.appendChild(group);
+    tr.appendChild(actions);
+    $("assetRows").appendChild(tr);
+  });
+}
+
+function openModal(id = null) {
+  editingId = id;
+  $("assetForm").reset();
+  $("modalTitle").textContent = id ? "Uredi imovinu" : "Dodaj novu imovinu";
+  if (id) {
+    const a = assets.find(item => item.id === id);
+    if (!a) return;
+    $("assetName").value = a.name;
+    $("assetTag").value = a.tag;
+    $("assetCategory").value = a.category;
+    $("assetLocation").value = a.location || "";
+    $("assetPrice").value = a.price;
+    $("assetDate").value = a.date || "";
+    $("assetSerial").value = a.serial || "";
+    $("assetEmployee").value = a.employee || "";
+    $("assetStatus").value = a.status;
+  }
+  $("assetModal").classList.add("open");
+}
+
+function closeModal() {
+  $("assetModal").classList.remove("open");
+  editingId = null;
+}
+
+$("addBtn").addEventListener("click", () => openModal());
+$("cancelBtn").addEventListener("click", closeModal);
+$("search").addEventListener("input", render);
+
+$("assetModal").addEventListener("click", event => {
+  if (event.target === $("assetModal")) closeModal();
+});
+
+$("assetForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const item = {
+    id: editingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    name: $("assetName").value.trim(),
+    tag: $("assetTag").value.trim(),
+    category: $("assetCategory").value,
+    location: $("assetLocation").value.trim(),
+    price: Number($("assetPrice").value || 0),
+    date: $("assetDate").value,
+    serial: $("assetSerial").value.trim(),
+    employee: $("assetEmployee").value.trim(),
+    status: $("assetStatus").value
+  };
+
+  if (assets.some(a => a.tag.toLowerCase() === item.tag.toLowerCase() && a.id !== editingId)) {
+    alert("Ovaj inventarski broj već postoji. Unesi jedinstven broj.");
+    return;
+  }
+
+  if (editingId) {
+    assets = assets.map(a => a.id === editingId ? item : a);
+  } else {
+    assets.push(item);
+  }
+
+  persist();
+  closeModal();
+  render();
+});
+
+document.querySelectorAll(".nav").forEach(button => {
+  button.addEventListener("click", () => {
+    currentPage = button.dataset.page;
+    document.querySelectorAll(".nav").forEach(b => b.classList.toggle("active", b === button));
+    $("pageTitle").textContent = ({
+      dashboard: "Kontrolna tabla",
+      assets: "Registar imovine",
+      maintenance: "Održavanje",
+      history: "Historija"
+    })[currentPage];
+
+    $("tableTitle").textContent = currentPage === "maintenance"
+      ? "Sredstva na održavanju"
+      : currentPage === "history"
+      ? "Trenutni pregled imovine"
+      : "Registar imovine";
+
+    $("search").value = "";
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
